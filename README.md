@@ -20,7 +20,7 @@ upgradegeoip
 ### 测试
 
 ```bash
-./geoip 92.118.39.58
+/usr/local/bin/geoip 92.118.39.58
 --- IP Geo-Location 查询结果 ---
 IP 地址: 92.118.39.58
 数据库类型: GeoLite2-City (版本: 1764056431)
