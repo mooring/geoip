@@ -45,7 +45,7 @@ func getMapName(names map[string]interface{}, lang string) string {
 
 func main() {
 	// --- 配置 ---
-	const dbPath = "./GeoLite2-City.mmdb"
+	const dbPath = "/usr/local/share/GeoLite2-City.mmdb"
 	// -----------------
 
 	// 1. 检查命令行参数

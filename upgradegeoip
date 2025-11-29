@@ -1,0 +1,113 @@
+#!/usr/bin/env bash
+set -euo pipefail
+IFS=$'\n\t'
+
+DEST_DIR="/usr/local/share/GeoIP"
+DEST_FILE="GeoLite2-City.mmdb"
+DEST_PATH="${DEST_DIR}/${DEST_FILE}"
+
+MIN_SIZE_BYTES=200000
+CURL_OPTS=(-fSL --connect-timeout 10 --max-time 300)
+
+log() { printf '%s\n' "$*"; }
+
+cleanup() {
+  [[ -n "${TMPDIR:-}" && -d "$TMPDIR" ]] && rm -rf "$TMPDIR"
+}
+trap cleanup EXIT
+
+
+# -----------------------------------------------------
+# 获取最新 release 下载链接（增强版：清除所有非法字符）
+# -----------------------------------------------------
+get_latest_release_url() {
+  local api="https://api.github.com/repos/P3TERX/GeoLite.mmdb/releases/latest"
+  local json raw url
+
+  json=$(curl -fsSL "$api")
+
+  raw=$(echo "$json" | grep "browser_download_url" | grep "GeoLite2-City" | sed -E 's/.*"browser_download_url": "(.*)".*/\1/')
+
+  # 删除隐藏字符、空格、回车、制表符等
+  url=$(echo "$raw" \
+      | tr -d '\r\n\t' \
+      | sed 's/[[:space:]]\+$//' \
+      | sed 's/[^[:print:]]//g' \
+      | sed 's/ //g'
+  )
+
+  if [[ -z "$url" ]]; then
+    log "提取下载链接失败，可能 GitHub API 改变格式。"
+    exit 2
+  fi
+
+  echo "$url"
+}
+
+
+verify_mmdb() {
+  local f=$1
+  local size
+  size=$(stat -c%s "$f" 2>/dev/null || stat -f%z "$f" 2>/dev/null || echo 0)
+  (( size >= MIN_SIZE_BYTES )) || return 1
+
+  if command -v file >/dev/null 2>&1; then
+    file "$f" | grep -qi "maxmind" && return 0
+  fi
+  return 0
+}
+
+install_mmdb() {
+  mkdir -p "$DEST_DIR"
+  mv -f "$1" "$DEST_PATH"
+  chmod 644 "$DEST_PATH"
+  log "安装完成：$DEST_PATH"
+}
+
+
+main() {
+  local url
+  url=$(get_latest_release_url)
+
+  log "最新 Release 下载链接："
+  log "  $url"
+  echo
+
+  TMPDIR=$(mktemp -d /tmp/geoip.XXXXXX)
+  local archive="$TMPDIR/file"
+
+  log "正在获取最新 Release 信息..."
+  curl "${CURL_OPTS[@]}" -o "$archive" "$url"
+
+  log "解压检测中..."
+  if file "$archive" | grep -q "gzip"; then
+    tar -xzf "$archive" -C "$TMPDIR"
+  elif file "$archive" | grep -q "Zip"; then
+    unzip -qq "$archive" -d "$TMPDIR"
+  else
+    # repo release 也可能直接提供 .mmdb
+    if file "$archive" | grep -q "data"; then
+      cp "$archive" "$TMPDIR/${DEST_FILE}"
+    else
+      log "未知的文件类型"
+      exit 3
+    fi
+  fi
+
+  local mmdb
+  mmdb=$(find "$TMPDIR" -name "$DEST_FILE" | head -n 1)
+
+  if [[ -z "$mmdb" ]]; then
+    log "解压后未找到 ${DEST_FILE}"
+    exit 4
+  fi
+
+  verify_mmdb "$mmdb" || { log "校验失败"; exit 5; }
+
+  install_mmdb "$mmdb"
+
+  log "GeoLite2-City 更新成功！"
+}
+
+main "$@"
+
