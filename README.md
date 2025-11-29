@@ -11,8 +11,10 @@ do mod download
 go build -o geoip main.go
 cp geoip /usr/local/bin/
 mkdir -p /usr/local/share/GeoIP
-cp -f GeoLite2-City.mmdb /usr/local/share/GeoIP/GeoLite2-City.mmdb
+#cp -f GeoLite2-City.mmdb /usr/local/share/GeoIP/GeoLite2-City.mmdb
 cp -f upgradegeoip /usr/local/bin
+# 实时下载最新数据
+upgradegeoip
 ```
 
 ### 测试
