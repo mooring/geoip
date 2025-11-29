@@ -3,11 +3,12 @@ package main
 import (
 	"fmt"
 	"log"
-	"net/netip" 
+	"net/netip"
 	"os"
 	"strings" // 用于错误信息处理
+	"time"
 
-	"github.com/oschwald/maxminddb-golang/v2" 
+	"github.com/oschwald/maxminddb-golang/v2"
 )
 
 // GeoRecord 定义结构体来映射 GeoLite2-City 数据库中的字段
@@ -16,7 +17,7 @@ type GeoRecord struct {
 	Country struct {
 		ISOCode string `maxminddb:"iso_code"`
 		// 更改为 interface{} 以最大化兼容性
-		Name    map[string]interface{} `maxminddb:"names"` 
+		Name map[string]interface{} `maxminddb:"names"`
 	} `maxminddb:"country"`
 
 	City struct {
@@ -32,9 +33,9 @@ type GeoRecord struct {
 
 // 辅助函数：安全地从 map[string]interface{} 中提取 string
 func getMapName(names map[string]interface{}, lang string) string {
-    if names == nil {
-        return ""
-    }
+	if names == nil {
+		return ""
+	}
 	if val, ok := names[lang]; ok {
 		if strVal, ok := val.(string); ok {
 			return strVal
@@ -73,7 +74,7 @@ func main() {
 	// 3. 查询 IP 地址
 	var record GeoRecord
 	// 适配本地库签名：只接收一个返回值
-	result := db.Lookup(addr) 
+	result := db.Lookup(addr)
 
 	// 4. 检查查询结果和解码
 	// 关键步骤：手动解码到结构体，并将 Decode() 的返回值用于错误处理
@@ -91,9 +92,11 @@ func main() {
 	}
 
 	// 5. 打印查询结果
-	fmt.Println("--- IP Geo-Location 查询结果 ---")
-	fmt.Printf("IP 地址: %s\n", ipStr)
-	fmt.Printf("数据库类型: %s (版本: %d)\n", db.Metadata.DatabaseType, db.Metadata.BuildEpoch)
+	fmt.Println("--- IP GEO 查询结果 ---")
+	now := time.Unix(int64(db.Metadata.BuildEpoch), 0)
+	ver := now.Format("20060102")
+	fmt.Printf("查询地址: %s\n", ipStr)
+	fmt.Printf("数据版本: %s(%s)\n", db.Metadata.DatabaseType, ver)
 	fmt.Println("---------------------------------")
 
 	// 优先显示中文名称，否则回退到英文
@@ -107,9 +110,9 @@ func main() {
 	}
 
 	// 输出详细信息
-	fmt.Printf("国家/地区: %s (%s)\n", countryName, record.Country.ISOCode)
-	fmt.Printf("城市: %s\n", cityName)
-	fmt.Printf("经纬度: %.4f, %.4f\n", record.Location.Latitude, record.Location.Longitude)
+	fmt.Printf("国家地区: %s (%s)\n", countryName, record.Country.ISOCode)
+	fmt.Printf("所属城市: %s\n", cityName)
+	fmt.Printf("经 纬 度: %.4f, %.4f\n", record.Location.Latitude, record.Location.Longitude)
 
 	fmt.Println("---------------------------------")
 }
