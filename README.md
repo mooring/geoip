@@ -3,6 +3,7 @@ https://github.com/P3TERX/GeoLite.mmdb
 
 ```bash
 export GOPROXY=https://goproxy.cn,direct
+do mod download
 go build -o geoip main.go
 cp geoip /usr/local/bin/
 ```
