@@ -7,7 +7,6 @@ import (
 	"os"
 	"strings" // 用于错误信息处理
 
-	// 导入已确认的 V2 库路径
 	"github.com/oschwald/maxminddb-golang/v2" 
 )
 
@@ -19,12 +18,12 @@ type GeoRecord struct {
 		// 更改为 interface{} 以最大化兼容性
 		Name    map[string]interface{} `maxminddb:"names"` 
 	} `maxminddb:"country"`
-	
+
 	City struct {
 		// 更改为 interface{} 以最大化兼容性
 		Name map[string]interface{} `maxminddb:"names"`
 	} `maxminddb:"city"`
-	
+
 	Location struct {
 		Latitude  float64 `maxminddb:"latitude"`
 		Longitude float64 `maxminddb:"longitude"`
@@ -86,7 +85,7 @@ func main() {
 		if strings.Contains(errStr, "Cannot locate") || strings.Contains(errStr, "not found") {
 			log.Fatalf("查询 IP %s 失败: 在数据库中找不到该 IP 的记录。", ipStr)
 		}
-		
+
 		// 其他解码错误
 		log.Fatalf("查询 IP %s 成功，但解码数据到结构体失败: %s", ipStr, errStr)
 	}
@@ -106,7 +105,7 @@ func main() {
 	if cityName == "" {
 		cityName = getMapName(record.City.Name, "en")
 	}
-	
+
 	// 输出详细信息
 	fmt.Printf("国家/地区: %s (%s)\n", countryName, record.Country.ISOCode)
 	fmt.Printf("城市: %s\n", cityName)
