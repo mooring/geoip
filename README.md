@@ -2,7 +2,7 @@ mmdb 地址
 https://github.com/P3TERX/GeoLite.mmdb
 
 ```bash
- curl -O https://dl.google.com/go/go1.24.10.linux-amd64.tar.gz
+curl -O https://dl.google.com/go/go1.24.10.linux-amd64.tar.gz
 rm -rf /usr/local/go && tar -C /usr/local -xzf go1.24.10.linux-amd64.tar.gz
 
 alias go=/usr/local/go/bin/go
