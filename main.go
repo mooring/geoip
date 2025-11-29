@@ -96,7 +96,7 @@ func main() {
 	now := time.Unix(int64(db.Metadata.BuildEpoch), 0)
 	ver := now.Format("20060102")
 	fmt.Printf("查询地址: %s\n", ipStr)
-	fmt.Printf("数据版本: %s(%s)\n", db.Metadata.DatabaseType, ver)
+	fmt.Printf("数据版本: %s (%s)\n", db.Metadata.DatabaseType, ver)
 	fmt.Println("---------------------------------")
 
 	// 优先显示中文名称，否则回退到英文
