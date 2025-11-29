@@ -9,7 +9,7 @@ alias go=/usr/local/go/bin/go
 export GOPROXY=https://goproxy.cn,direct
 do mod download
 go build -o geoip main.go
-cp geoip /usr/local/bin/
+cp -f geoip /usr/local/bin/
 mkdir -p /usr/local/share/GeoIP
 #cp -f GeoLite2-City.mmdb /usr/local/share/GeoIP/GeoLite2-City.mmdb
 cp -f upgradegeoip /usr/local/bin
